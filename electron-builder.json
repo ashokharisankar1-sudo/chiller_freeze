@@ -1,0 +1,64 @@
+{
+  "appId": "com.creator.assistant",
+  "productName": "Creator Assistant",
+  "copyright": "Copyright © 2026",
+  "directories": {
+    "output": "release",
+    "buildResources": "build"
+  },
+  "files": [
+    "dist/**/*",
+    "electron/**/*",
+    "node_modules/**/*",
+    "!node_modules/.cache",
+    "!**/*.map"
+  ],
+  "extraResources": [
+    {
+      "from": "public",
+      "to": "public",
+      "filter": ["**/*"]
+    }
+  ],
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      },
+      {
+        "target": "portable",
+        "arch": ["x64"]
+      }
+    ],
+    "icon": "public/icon-512.png",
+    "artifactName": "${productName}-${version}-Setup.${ext}"
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true,
+    "deleteAppDataOnUninstall": false,
+    "shortcutName": "Creator Assistant",
+    "installerIcon": "public/icon-512.png",
+    "uninstallerIcon": "public/icon-512.png",
+    "installerHeaderIcon": "public/icon-512.png",
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutApps": []
+  },
+  "portable": {
+    "artifactName": "${productName}-${version}-Portable.${ext}"
+  },
+  "mac": {
+    "target": ["dmg", "zip"],
+    "icon": "public/icon-512.png",
+    "category": "public.app-category.productivity"
+  },
+  "linux": {
+    "target": ["AppImage", "deb"],
+    "icon": "public/icon-512.png",
+    "category": "Development"
+  },
+  "publish": null
+}

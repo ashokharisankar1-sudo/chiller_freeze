@@ -1,0 +1,21 @@
+{
+  "name": "creator-assistant-desktop",
+  "version": "1.0.0",
+  "description": "Creator Assistant Desktop Application",
+  "main": "electron/main.js",
+  "scripts": {
+    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .\"",
+    "electron:build": "node build-exe.js",
+    "electron:preview": "electron ."
+  },
+  "build": {
+    "extends": "./electron-builder.json"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1",
+    "concurrently": "^8.2.2",
+    "wait-on": "^7.2.0",
+    "cross-env": "^7.0.3"
+  }
+}
