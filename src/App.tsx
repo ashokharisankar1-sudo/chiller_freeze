@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import Launcher from './components/Launcher';
 import AssistantApp from './components/AssistantApp';
+import TeachingAssistant from './components/TeachingAssistant';
 
-type AppMode = 'launcher' | 'silent' | 'on' | 'off';
+type AppMode = 'launcher' | 'silent' | 'on' | 'off' | 'teaching';
 
 export default function App() {
   const [mode, setMode] = useState<AppMode>('launcher');
@@ -80,6 +81,23 @@ export default function App() {
   // On mode - full assistant
   if (mode === 'on') {
     return <AssistantApp onBack={() => setMode('launcher')} />;
+  }
+
+  // Teaching mode - screen reading assistant
+  if (mode === 'teaching') {
+    return (
+      <div className="w-screen h-screen bg-gray-950 p-4 overflow-y-auto">
+        <TeachingAssistant />
+        <div className="mt-4 text-center">
+          <button
+            onClick={() => setMode('launcher')}
+            className="px-6 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-gray-300 transition-colors"
+          >
+            ← Back to Launcher
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return null;
