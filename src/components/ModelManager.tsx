@@ -50,6 +50,12 @@ export default function ModelManager({ onModelsLoaded }: { onModelsLoaded?: (mod
     setTesting(prev => ({ ...prev, [modelName]: false }));
   };
 
+  const testAllModels = async () => {
+    for (const model of models) {
+      await testModel(model.name);
+    }
+  };
+
   const getModelRole = (name: string) => {
     for (const [key, value] of Object.entries(MODEL_ROLES)) {
       if (name.includes(key)) return value;
@@ -74,14 +80,24 @@ export default function ModelManager({ onModelsLoaded }: { onModelsLoaded?: (mod
             <p className="text-sm text-gray-400">Ollama Model Discovery & Testing</p>
           </div>
         </div>
-        <button
-          onClick={fetchModels}
-          disabled={loading}
-          className="flex items-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-gray-300 transition-colors"
-        >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={testAllModels}
+            disabled={loading || models.length === 0}
+            className="flex items-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-gray-300 transition-colors disabled:opacity-50"
+          >
+            <Zap className="w-4 h-4" />
+            Test All
+          </button>
+          <button
+            onClick={fetchModels}
+            disabled={loading}
+            className="flex items-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-gray-300 transition-colors"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
+        </div>
       </div>
 
       {/* Connection Status */}
@@ -98,8 +114,8 @@ export default function ModelManager({ onModelsLoaded }: { onModelsLoaded?: (mod
           <XCircle className="w-4 h-4" />
         )}
         {isConnected === null ? 'Checking Ollama connection...' :
-         isConnected ? 'Connected to Ollama (localhost:11434)' :
-         'Ollama not available - start Ollama service'}
+         isConnected ? 'Connected to Ollama (localhost:11434) — Fallback chain active' :
+         'Ollama not available — Run: ollama serve'}
       </div>
 
       {/* Models Grid */}
@@ -153,6 +169,9 @@ export default function ModelManager({ onModelsLoaded }: { onModelsLoaded?: (mod
               {testResult?.error && (
                 <p className="text-xs text-red-400 mt-1 truncate">{testResult.error}</p>
               )}
+              {testResult?.success && (
+                <p className="text-xs text-green-400 mt-1">✓ Ready for inference</p>
+              )}
             </div>
           );
         })}
@@ -160,6 +179,17 @@ export default function ModelManager({ onModelsLoaded }: { onModelsLoaded?: (mod
 
       {models.length === 0 && isConnected && (
         <p className="text-center text-gray-500 py-4">No models found. Pull models with: ollama pull &lt;model&gt;</p>
+      )}
+
+      {/* Fallback Chain Info */}
+      {models.length > 0 && (
+        <div className="mt-4 p-3 bg-gray-800/30 rounded-lg border border-gray-700/20">
+          <p className="text-xs text-gray-400">
+            <span className="text-indigo-400 font-medium">Fallback Chain:</span>{' '}
+            If the primary model fails, requests automatically retry with fallback models.
+            This ensures you always get an answer.
+          </p>
+        </div>
       )}
     </div>
   );

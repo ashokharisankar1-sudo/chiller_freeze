@@ -54,3 +54,15 @@ export interface ScreenCaptureState {
 }
 
 export type ModelRole = 'coding' | 'reasoning' | 'classification' | 'transcription';
+
+export interface EvaluationMetrics {
+  bleu: number;
+  rouge1: number;
+  rouge2: number;
+  rougeL: number;
+  semanticSimilarity: number;
+  relevanceScore: number;
+  coherenceScore: number;
+  completenessScore: number;
+  overallScore: number;
+}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { OllamaModel } from './types';
 import { ollamaService } from './services/ollama';
+import { evaluationService } from './services/evaluation';
 import ModelManager from './components/ModelManager';
 import ChatInterface from './components/ChatInterface';
 import ScreenCapture from './components/ScreenCapture';
@@ -8,7 +9,7 @@ import AudioTranscription from './components/AudioTranscription';
 import MeetingAgent from './components/MeetingAgent';
 import { 
   Cpu, MessageSquare, Monitor, Mic, Users, 
-  Activity, Wifi, WifiOff, ChevronRight, Layout 
+  Activity, Wifi, WifiOff, ChevronRight, Layout, Award 
 } from 'lucide-react';
 
 type Tab = 'dashboard' | 'chat' | 'screen' | 'transcription' | 'meeting';
@@ -68,19 +69,23 @@ export default function App() {
                   <h1 className="text-lg font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
                     Computer Assistant
                   </h1>
-                  <p className="text-xs text-gray-500 -mt-0.5">AI-Powered Desktop Companion</p>
+                  <p className="text-xs text-gray-500 -mt-0.5">AI Desktop Companion • HF Evaluated</p>
                 </div>
               </div>
 
               {/* Status */}
               <div className="flex items-center gap-4">
+                <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-lg">
+                  <Award className="w-3 h-3 text-indigo-400" />
+                  <span className="text-xs text-indigo-300">HF Evaluate</span>
+                </div>
                 <div className="flex items-center gap-2 text-sm">
                   {isConnected ? (
                     <Wifi className="w-4 h-4 text-green-400" />
                   ) : (
                     <WifiOff className="w-4 h-4 text-red-400" />
                   )}
-                  <span className="text-gray-400">{statusMessage}</span>
+                  <span className="text-gray-400 hidden sm:inline">{statusMessage}</span>
                 </div>
                 <div className="hidden sm:flex items-center gap-1 px-3 py-1.5 bg-gray-800/50 rounded-lg">
                   <Activity className="w-3 h-3 text-indigo-400" />
@@ -165,8 +170,8 @@ function DashboardView({
         <h2 className="text-2xl font-bold text-white mb-2">Welcome to Computer Assistant</h2>
         <p className="text-gray-400 text-sm max-w-2xl">
           Your AI-powered desktop companion that can see your screen, transcribe audio, 
-          and answer questions using multiple specialized AI models. All processing happens 
-          locally through Ollama.
+          and answer questions using multiple specialized AI models. Every response is 
+          automatically evaluated using Hugging Face metrics (BLEU, ROUGE, Semantic Similarity).
         </p>
         <div className="flex flex-wrap gap-3 mt-4">
           <button
@@ -211,7 +216,7 @@ function DashboardView({
         <StatCard
           title="Connection"
           value={isConnected ? 'Active' : 'Offline'}
-          subtitle={isConnected ? 'localhost:11434' : 'Start Ollama service'}
+          subtitle={isConnected ? 'Fallback chain ready' : 'Start Ollama service'}
           icon={isConnected ? <Wifi className="w-5 h-5 text-green-400" /> : <WifiOff className="w-5 h-5 text-red-400" />}
           color={isConnected ? 'green' : 'red'}
         />
@@ -223,24 +228,70 @@ function DashboardView({
           color="purple"
         />
         <StatCard
-          title="Pipeline"
-          value="4-Stage"
-          subtitle="Transcribe → Classify → Route → Answer"
-          icon={<Users className="w-5 h-5 text-orange-400" />}
+          title="Evaluation"
+          value="7 Metrics"
+          subtitle="BLEU, ROUGE, Semantic, Quality"
+          icon={<Award className="w-5 h-5 text-amber-400" />}
           color="orange"
         />
+      </div>
+
+      {/* Evaluation Metrics Info */}
+      <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-amber-500/20 rounded-lg">
+            <Award className="w-5 h-5 text-amber-400" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-white">Hugging Face Evaluation Pipeline</h3>
+            <p className="text-xs text-gray-400">Every response is automatically evaluated</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <EvalMetricCard
+            name="BLEU Score"
+            description="N-gram precision between reference and generated text"
+            range="0-1"
+            good=">0.6"
+          />
+          <EvalMetricCard
+            name="ROUGE-1/L"
+            description="Recall-oriented overlap (unigram & longest common subsequence)"
+            range="0-1"
+            good=">0.5"
+          />
+          <EvalMetricCard
+            name="Semantic Similarity"
+            description="Cosine similarity using HF sentence-transformers embeddings"
+            range="0-1"
+            good=">0.7"
+          />
+          <EvalMetricCard
+            name="Quality Score"
+            description="Relevance, coherence, and completeness assessment"
+            range="0-1"
+            good=">0.6"
+          />
+        </div>
+        <div className="mt-4 p-3 bg-indigo-500/5 border border-indigo-500/20 rounded-lg">
+          <p className="text-xs text-gray-400">
+            <span className="text-indigo-400 font-medium">Note:</span> Add your Hugging Face API key in Chat settings 
+            for full semantic evaluation using sentence-transformers/all-MiniLM-L6-v2. 
+            Without it, local bag-of-words similarity is used as fallback.
+          </p>
+        </div>
       </div>
 
       {/* Architecture Overview */}
       <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6">
         <h3 className="text-lg font-semibold text-white mb-4">System Architecture</h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
           <PipelineStep
             step={1}
-            title="Transcription"
-            model="whisper"
-            description="Audio → Text conversion"
-            color="green"
+            title="Input"
+            model="User"
+            description="Text, screen, or audio"
+            color="gray"
           />
           <PipelineStep
             step={2}
@@ -251,27 +302,32 @@ function DashboardView({
           />
           <PipelineStep
             step={3}
-            title="Reasoning"
-            model="llama3"
-            description="Contextual answers & summaries"
+            title="Inference"
+            model="llama3/qwen3"
+            description="Generate with fallback"
             color="purple"
           />
           <PipelineStep
             step={4}
-            title="Coding"
-            model="qwen3-coder:30b"
-            description="Code generation & debugging"
-            color="blue"
+            title="Evaluate"
+            model="HF Metrics"
+            description="BLEU, ROUGE, Semantic"
+            color="indigo"
+          />
+          <PipelineStep
+            step={5}
+            title="Display"
+            model="UI"
+            description="Answer + scores"
+            color="green"
           />
         </div>
-        <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500">
-          <span>Async inference</span>
-          <span>•</span>
-          <span>Model availability checks</span>
-          <span>•</span>
-          <span>Request cancellation</span>
-          <span>•</span>
-          <span>Configurable routing</span>
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-3 text-xs text-gray-500">
+          <span className="px-2 py-1 bg-gray-800/50 rounded">Async inference</span>
+          <span className="px-2 py-1 bg-gray-800/50 rounded">Auto-retry (3x)</span>
+          <span className="px-2 py-1 bg-gray-800/50 rounded">Model fallback chain</span>
+          <span className="px-2 py-1 bg-gray-800/50 rounded">Request cancellation</span>
+          <span className="px-2 py-1 bg-gray-800/50 rounded">HF Evaluate API</span>
         </div>
       </div>
     </div>
@@ -316,22 +372,44 @@ function PipelineStep({ step, title, model, description, color }: {
     amber: 'border-amber-500/30 bg-amber-500/5',
     purple: 'border-purple-500/30 bg-purple-500/5',
     blue: 'border-blue-500/30 bg-blue-500/5',
+    indigo: 'border-indigo-500/30 bg-indigo-500/5',
+    gray: 'border-gray-500/30 bg-gray-500/5',
   };
   const textColor: Record<string, string> = {
     green: 'text-green-400',
     amber: 'text-amber-400',
     purple: 'text-purple-400',
     blue: 'text-blue-400',
+    indigo: 'text-indigo-400',
+    gray: 'text-gray-400',
   };
 
   return (
-    <div className={`rounded-xl border p-4 ${colorClasses[color]}`}>
-      <div className="flex items-center gap-2 mb-2">
+    <div className={`rounded-xl border p-3 ${colorClasses[color]}`}>
+      <div className="flex items-center gap-2 mb-1">
         <span className={`text-xs font-bold ${textColor[color]}`}>#{step}</span>
         <span className="text-sm font-medium text-white">{title}</span>
       </div>
       <p className={`text-xs font-mono ${textColor[color]} mb-1`}>{model}</p>
-      <p className="text-xs text-gray-500">{description}</p>
+      <p className="text-[11px] text-gray-500">{description}</p>
+    </div>
+  );
+}
+
+function EvalMetricCard({ name, description, range, good }: {
+  name: string;
+  description: string;
+  range: string;
+  good: string;
+}) {
+  return (
+    <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/20">
+      <h4 className="text-sm font-medium text-white mb-1">{name}</h4>
+      <p className="text-xs text-gray-500 mb-3">{description}</p>
+      <div className="flex items-center gap-3 text-xs">
+        <span className="text-gray-400">Range: <span className="text-gray-300">{range}</span></span>
+        <span className="text-gray-400">Good: <span className="text-green-400">{good}</span></span>
+      </div>
     </div>
   );
 }
